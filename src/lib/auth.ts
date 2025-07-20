@@ -27,7 +27,7 @@ export const setAuthCookie = (token: string) => {
     httpOnly: process.env.NODE_ENV === "production",
     secure: process.env.NODE_ENV === "production",
     sameSite: "strict",
-    domain: process.env.NODE_ENV === "production" ? "everno.vercel.app" : "",
+    domain: process.env.NODE_ENV === "production" ? ".everno.vercel.app" : undefined,
   });
 };
 
