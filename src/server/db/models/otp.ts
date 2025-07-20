@@ -21,7 +21,7 @@ OtpSchema.index({ expiresAt: 1 }, { expireAfterSeconds: 0 });
 
 const createOtpModel = (): Model<OtpDocument> => {
   // Check if the model already exists to avoid redefinition
-  if (mongoose.models.User) {
+  if (mongoose.models.Otp) {
     return mongoose.models.Otp as Model<OtpDocument>;
   }
   return mongoose.model<OtpDocument>("Otp", OtpSchema);

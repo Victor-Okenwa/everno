@@ -39,7 +39,7 @@ export function AuthProvider({ children }: { children: ReactNode }) {
         const cookies = parseCookies();
         const token = cookies.auth;
         if (token) {
-          const decoded = verifyToken(token);
+          const decoded = await verifyToken(token);
           if (decoded) {
             // Use tRPC query for getMe
             const { data } = api.auth.getMe.useQuery(undefined, {

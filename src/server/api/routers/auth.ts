@@ -234,7 +234,7 @@ export const authRouter = createTRPCRouter({
         message: "Not authenticated",
       });
 
-    const decoded = verifyToken(token);
+    const decoded = await verifyToken(token);
     if (!decoded)
       throw new TRPCError({ code: "UNAUTHORIZED", message: "Invalid token" });
 

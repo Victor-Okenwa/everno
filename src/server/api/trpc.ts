@@ -24,7 +24,7 @@ export const createTRPCContext = async (opts: {
 
   if (token) {
     try {
-      const verifiedToken = verifyToken(token); // Ensure userId is a string
+      const verifiedToken = await verifyToken(token); // Ensure userId is a string
       user = await UserModel.findById(verifiedToken?.userId).exec();
 
       if (!user) {
