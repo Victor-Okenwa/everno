@@ -83,7 +83,7 @@ export const authRouter = createTRPCRouter({
       // eslint-disable-next-line @typescript-eslint/no-unsafe-argument, @typescript-eslint/no-explicit-any
       await authRouter.createCaller({} as any).sendOtp({ email: input.email });
 
-      ctx.res?.setHeader("Set-Cookie", setAuthCookie(token));
+      ctx.res.setHeader("Set-Cookie", setAuthCookie(token));
 
       return {
         user: {
