@@ -85,7 +85,7 @@ export default function SignUp() {
             isPasswordVisible={isPasswordVisible}
             setIsPasswordVisible={setIsPasswordVisible}
           />
-          <Button disabled={register.isPending} className="mt-2 px-6">
+          <Button disabled={register.isPending} className="mt-2 w-full">
             {register.isPending ? <CustomLoader type="all" /> : "Proceed"}
           </Button>
         </form>

@@ -55,7 +55,7 @@ export default function Signin() {
       <div className="flex flex-col gap-3">
         <h2 className="text-2xl sm:text-3xl">Welcome,</h2>
         <p className="text-foreground/70 max-w-xs">
-          Fill in your details below to register or login to your account
+          Fill in your details below to login to your account
         </p>
       </div>
 
@@ -73,7 +73,7 @@ export default function Signin() {
             isPasswordVisible={isPasswordVisible}
             setIsPasswordVisible={setIsPasswordVisible}
           />
-          <Button disabled={login.isPending} className="mt-2 px-6">
+          <Button disabled={login.isPending} className="mt-2 w-full">
             {login.isPending ? <CustomLoader type="all" /> : "Proceed"}
           </Button>
         </form>

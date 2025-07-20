@@ -6,14 +6,14 @@ import { connectToDatabase } from "~/server/db/mongodb";
 import UserModel, { type UserDocument } from "~/server/db/models/user";
 import { verifyToken } from "~/app/api/auth/verify-jwt";
 
-export type ExtraResponse = NextResponse & {
-  setHeader: (name: string, value: string) => void;
-  cookies: { get: (name: string) => { value: string } | undefined };
-};
+// export type ExtraResponse = NextResponse & {
+//   setHeader: (name: string, value: string) => void;
+//   cookies: { get: (name: string) => { value: string } | undefined };
+// };
 // Updated createTRPCContext to use NextRequest and NextResponse
 export const createTRPCContext = async (opts: {
   req: NextRequest;
-  res: ExtraResponse;
+  res: NextResponse;
 }) => {
   // Connect to MongoDB
   await connectToDatabase();

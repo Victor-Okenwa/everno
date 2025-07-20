@@ -6,7 +6,6 @@ import jwt from "jsonwebtoken";
 const SECRET = process.env.AUTH_SECRET!;
 
 export async function verifyToken(token: string) {
-  console.log(SECRET);
   try {
     return jwt.verify(token, SECRET) as { userId: string };
   } catch (error) {
@@ -19,7 +18,7 @@ export default async function handler(req: NextApiRequest, res: NextApiResponse)
   if (req.method !== "POST") {
     return res.status(405).json({ error: "Method not allowed" });
   }
-
+  
   // eslint-disable-next-line @typescript-eslint/no-unsafe-assignment
   const { token } = req.body;
   if (!token) {

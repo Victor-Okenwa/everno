@@ -58,7 +58,7 @@ export const authRouter = createTRPCRouter({
         password: z.string().min(5),
       }),
     )
-    .mutation(async ({ input, ctx }) => {
+    .mutation(async ({ input }) => {
       // Explicitly type the query result
       const existingUser: UserDocument | null = await UserModel.findOne({
         email: input.email,
@@ -79,11 +79,12 @@ export const authRouter = createTRPCRouter({
       });
 
       const token = createToken(String(user?.id ?? user?._id));
+      const cookie = setAuthCookie(token);
 
       // eslint-disable-next-line @typescript-eslint/no-unsafe-argument, @typescript-eslint/no-explicit-any
       await authRouter.createCaller({} as any).sendOtp({ email: input.email });
 
-      ctx.res.setHeader("Set-Cookie", setAuthCookie(token));
+      // ctx.res.setHeader("Set-Cookie", setAuthCookie(token));
 
       return {
         user: {
@@ -92,6 +93,7 @@ export const authRouter = createTRPCRouter({
           name: user.name,
         },
         token,
+        setCookie: cookie, // <-- return the cookie string
       };
     }),
 
@@ -256,7 +258,7 @@ export const authRouter = createTRPCRouter({
 
   verifyOtp: publicProcedure
     .input(z.object({ email: z.string().email(), otp: z.string().length(4) }))
-    .mutation(async ({ input, ctx }) => {
+    .mutation(async ({ input }) => {
       const { email, otp } = input;
       const otpDoc = await OtpModel.findOne({ email, otp }).exec();
 
@@ -273,8 +275,8 @@ export const authRouter = createTRPCRouter({
 
       const user = await UserModel.findOne({ email }).exec();
       const token = createToken(String(user?.id ?? user?._id));
-      ctx.res?.setHeader("Set-Cookie", setAuthCookie(token));
+      const cookie = setAuthCookie(token);
 
-      return { message: "Account verified successfully", token };
+      return { message: "Account verified successfully", token, setCookie: cookie };
     }),
 });

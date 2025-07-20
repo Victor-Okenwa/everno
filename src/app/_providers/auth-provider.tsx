@@ -33,6 +33,14 @@ export function AuthProvider({ children }: { children: ReactNode }) {
   const router = useRouter();
   const utils = api.useUtils();
 
+  const {
+    data,
+    isLoading: queryLoading,
+    error,
+  } = api.auth.getMe.useQuery(undefined, {
+    enabled: !!parseCookies().auth, // Only run query if token exists
+  });
+
   useEffect(() => {
     const initializeAuth = async () => {
       try {
@@ -40,14 +48,13 @@ export function AuthProvider({ children }: { children: ReactNode }) {
         const token = cookies.auth;
         if (token) {
           const decoded = await verifyToken(token);
-          if (decoded) {
-            // Use tRPC query for getMe
-            const { data } = api.auth.getMe.useQuery(undefined, {
-              enabled: !!token,
-            });
-
-            if (data) setUser(data.user as User); // Initial set if data is available
+          if (decoded && data?.user) {
+            setUser(data.user as User);
+          } else {
+            setUser(null);
           }
+        } else {
+          setUser(null);
         }
       } catch (error) {
         console.error("Auth initialization error:", error);
@@ -57,7 +64,7 @@ export function AuthProvider({ children }: { children: ReactNode }) {
       }
     };
     void initializeAuth();
-  }, [utils.auth.getMe]);
+  }, [data]);
 
   const register = async (data: {
     email: string;

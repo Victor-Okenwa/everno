@@ -13,7 +13,7 @@ export default async function AuthLayout({
 }) {
   return (
       <div className="from-foreground/50 to-primary flex min-h-svh items-center justify-center overflow-hidden bg-gradient-to-b">
-        <Card className="max-w-lg min-w-[35%]">
+        <Card className="max-w-lg min-w-[35%] shadow-sm shadow-background">
           <CardHeader className="sr-only p-0">
             <CardDescription>Authentication pages</CardDescription>
           </CardHeader>

@@ -94,7 +94,7 @@ export default function VerifyRequest() {
               damping: 20,
             }}
           >
-            <InfoIcon className="size-20 text-amber-600" />
+            <InfoIcon className="text-primary size-20" />
           </motion.div>
 
           <h2 className="text-primary text-center text-lg font-semibold">
@@ -106,15 +106,25 @@ export default function VerifyRequest() {
           </p>
         </div>
         <Form {...verifyOtpForm}>
-          <form>
+          <form onSubmit={verifyOtpForm.handleSubmit(handleVerifyOtp)}>
             <div className="mx-auto my-2 max-w-xs">
               <CustomOtpField
                 control={verifyOtpForm.control}
                 name="otp"
                 isNotLabeled
                 isLoading={mutation.isPending}
-                handleSubmit={handleVerifyOtp}
+                // handleSubmit={handleVerifyOtp}
               />
+              <Button
+                disabled={mutation.isPending}
+                className="mt-5 w-full max-w-sm"
+              >
+                {mutation.isPending ? (
+                  <CustomLoader type="all" />
+                ) : (
+                  "Verify Otp"
+                )}
+              </Button>
             </div>
           </form>
         </Form>
