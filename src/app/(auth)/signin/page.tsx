@@ -13,7 +13,7 @@ import Link from "next/link";
 import { toast } from "sonner";
 import { api } from "~/trpc/react";
 import { setAuthCookie } from "~/lib/auth";
-
+import { setCookie } from "cookies-next";
 const signinSchema = z.object({
   email: z.string().email({ message: "Invalid email format" }),
   password: z
@@ -39,8 +39,18 @@ export default function Signin() {
     onError(error) {
       toast.error("Login error. Reason: " + error.message);
     },
-    onSuccess: ({ token }) => {
-      document.cookie = setAuthCookie(token);
+    onSuccess: async ({ token }) => {
+      await setCookie("test", token, {
+        httpOnly: true,
+        secure: process.env.NODE_ENV === "production",
+        sameSite: "none",
+        path: "/",
+        maxAge: 7 * 24 * 60 * 60,
+        domain:
+          process.env.NODE_ENV === "production"
+            ? ".everno.vercel.app"
+            : undefined,
+      });
       toast.success("Your account has been signed in");
       router.push("/dashboard");
     },
