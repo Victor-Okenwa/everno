@@ -2,42 +2,30 @@
 /* eslint-disable @typescript-eslint/no-unsafe-member-access */
 /* eslint-disable @typescript-eslint/no-unsafe-assignment */
 import { fetchRequestHandler } from "@trpc/server/adapters/fetch";
-import { type NextRequest, NextResponse } from "next/server";
+import {type NextRequest, NextResponse } from "next/server";
 import { env } from "~/env";
 import { appRouter } from "~/server/api/root";
 import { createTRPCContext } from "~/server/api/trpc";
 
-const setCookiePaths = [
-  "auth.login",
-  "auth.register",
-  "auth.verifyOtp",
-]
+export async function POST(req: NextRequest) {
+  let setCookieValue: string | undefined;
 
-// Create context with both req and res
-const createContext = async (req: NextRequest) => {
-  const res = new NextResponse(); // Create a new response object
-  return createTRPCContext({ req, res });
-};
-
-const handler = (req: NextRequest) => {
-  return fetchRequestHandler({
+  const handler = await fetchRequestHandler({
     endpoint: "/api/trpc",
     req,
     router: appRouter,
-    createContext: () => createContext(req),
-    responseMeta: ({ ctx, data, paths }) => {
+    createContext: async () => {
+      return createTRPCContext({ req, res: undefined as unknown as NextResponse<unknown> });
+    },
+    responseMeta: ({ data, paths }) => {
       if (
-        paths?.some((p)=> setCookiePaths.includes(p)) &&
+        paths?.some((p) =>
+          ["auth.login", "auth.register", "auth.verifyOtp"].includes(p),
+        ) &&
         data &&
         (data as any).setCookie
-        // ctx?.res instanceof NextResponse
       ) {
-        console.log("Setting cookie in responseMeta:", (data as any).setCookie);
-        return {
-          headers: {
-            "Set-Cookie": (data as any).setCookie,
-          },
-        };
+        setCookieValue = (data as any).setCookie;
       }
       return {};
     },
@@ -50,6 +38,12 @@ const handler = (req: NextRequest) => {
           }
         : undefined,
   });
-};
 
-export { handler as GET, handler as POST };
+  const res = new NextResponse(handler.body, handler);
+  if (setCookieValue) {
+    res.headers.set("Set-Cookie", setCookieValue);
+  }
+  return res;
+}
+
+export { POST as GET };
