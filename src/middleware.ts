@@ -5,8 +5,9 @@ import type { NextRequest } from "next/server";
 
 export async function middleware(req: NextRequest) {
   const cookies = req.cookies;
-  console.log("Cookies from req.cookies:", cookies);
   const token = cookies.get("auth");
+  // console.log(token.value);
+  
 
   if (token) {
     // Call API route to verify token
@@ -17,12 +18,13 @@ export async function middleware(req: NextRequest) {
     });
     
     const result = await verifyResponse.json();
+    console.log(result)
 
     if (result.valid) {
       return NextResponse.next();
     }
   }
-  return NextResponse.redirect(new URL("/signin", req.url));
+  // return NextResponse.redirect(new URL("/signin", req.url));
 }
 
 export const config = {
