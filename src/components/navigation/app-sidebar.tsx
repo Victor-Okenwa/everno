@@ -6,11 +6,8 @@ import {
   Link2Icon,
   PlugZap2,
   PlusCircleIcon,
-  Search,
-  Settings,
 } from "lucide-react";
 import Link from "next/link";
-import { useRouter } from "next/router";
 import { usePathname } from "next/navigation";
 
 import {
@@ -44,35 +41,6 @@ import { Suspense, useState } from "react";
 import { toast } from "sonner";
 import { CustomLoader } from "../custom-loader";
 
-// Menu items.
-const items = [
-  // {
-  //   title: "Home",
-  //   url: "#",
-  //   icon: Home,
-  // },
-  {
-    title: "Inbox",
-    url: "#",
-    icon: Inbox,
-  },
-  {
-    title: "Calendar",
-    url: "#",
-    icon: Calendar,
-  },
-  {
-    title: "Search",
-    url: "#",
-    icon: Search,
-  },
-  {
-    title: "Settings",
-    url: "#",
-    icon: Settings,
-  },
-];
-
 const newLinkFormSchema = z.object({
   name: z
     .string({ message: "Field cannot be empty" })
@@ -83,7 +51,7 @@ type NewLinkForm = z.infer<typeof newLinkFormSchema>;
 function NavProjectsSkeleton() {
   return (
     <>
-      {Array.from({ length: 5 }).map((_, index) => (
+      {Array.from({ length: 3 }).map((_, index) => (
         <SidebarMenuSubItem key={index}>
           <SidebarMenuSkeleton showIcon />
         </SidebarMenuSubItem>
