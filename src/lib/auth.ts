@@ -12,7 +12,7 @@ export async function hashPassword(password: string) {
   return bcrypt.hash(password, 10);
 }
 
-export async function verifyPassword(password: string, hash: string) {  
+export async function verifyPassword(password: string, hash: string) {
   return bcrypt.compare(password, hash);
 }
 
@@ -27,7 +27,8 @@ export const setAuthCookie = (token: string) => {
     httpOnly: process.env.NODE_ENV === "production",
     secure: process.env.NODE_ENV === "production",
     sameSite: "strict",
-    domain: process.env.NODE_ENV === "production" ? ".everno.vercel.app" : undefined,
+    domain:
+      process.env.NODE_ENV === "production" ? ".everno.vercel.app" : undefined,
   });
 };
 
@@ -48,9 +49,11 @@ export const clearAuthCookie = () => {
   return serialize("auth", "", {
     maxAge: 0,
     path: "/",
-    httpOnly: true,
+    httpOnly: process.env.NODE_ENV === "production",
     secure: process.env.NODE_ENV === "production",
     sameSite: "strict",
+    domain:
+      process.env.NODE_ENV === "production" ? ".everno.vercel.app" : undefined,
   });
 };
 

@@ -76,6 +76,7 @@ export const authRouter = createTRPCRouter({
         name: input.name,
         email: input.email,
         password: hashedPassword,
+        links: [],
       });
 
       const token = createToken(String(user?.id ?? user?._id));
@@ -104,7 +105,7 @@ export const authRouter = createTRPCRouter({
         password: z.string().min(5),
       }),
     )
-    .mutation(async ({ input, ctx }) => {
+    .mutation(async ({ input }) => {
       const user: UserDocument | null = await UserModel.findOne({
         email: input.email,
       }).exec();
@@ -130,7 +131,7 @@ export const authRouter = createTRPCRouter({
       const token = createToken(String(user.id ?? user._id));
       const cookie = setAuthCookie(token);
 
-      console.log("Context req:", ctx.req.cookies.get("auth")?.value);
+      console.log("Context req:", cookie);
 
       return {
         user: {

@@ -14,6 +14,7 @@ interface UserSchemaDefinition {
   theme: string;
   role?: string; // Optional role
   isVerified: boolean;
+  links: {name: string}[];
   createdAt: Date;
   updatedAt: Date;
 }
@@ -51,6 +52,14 @@ const userSchema: Schema<User> = new Schema<User>(
     theme: {
       type: String,
       default: "system",
+    },
+    links: {
+      type: [
+        {
+          name: { type: String, required: true },
+        },
+      ],
+      default: [],
     },
     isVerified: {
       type: Boolean,

@@ -39,18 +39,12 @@ export default function Signin() {
     onError(error) {
       toast.error("Login error. Reason: " + error.message);
     },
-    onSuccess: async ({ token }) => {
-      await setCookie("test", token, {
-        httpOnly: true,
-        secure: process.env.NODE_ENV === "production",
-        sameSite: "none",
-        path: "/",
-        maxAge: 7 * 24 * 60 * 60,
-        domain:
-          process.env.NODE_ENV === "production"
-            ? ".everno.vercel.app"
-            : undefined,
-      });
+    onSuccess: async ({ user, token }) => {
+    document.cookie = setAuthCookie(token);
+      localStorage.setItem(
+        "navigationData",
+        JSON.stringify({ name: user.name, email: user.email }),
+      );
       toast.success("Your account has been signed in");
       router.push("/dashboard");
     },

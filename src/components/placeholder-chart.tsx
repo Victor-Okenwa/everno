@@ -21,7 +21,7 @@ export function PlaceholderChart() {
         </CardTitle>
       </CardHeader>
       <CardContent className="flex items-center justify-center h-[200px]">
-        <Link href="#" className="flex items-center justify-center size-full border-2 border-dashed bg-accent rounded-sm text-secondary-foreground/70">
+        <Link href="/dashboard/new" className="flex items-center justify-center size-full border-2 border-dashed bg-accent rounded-sm text-secondary-foreground/70">
         <PlusIcon /> <span>Add New Data</span>
         </Link>
       </CardContent>

@@ -31,12 +31,12 @@ export function AuthProvider({ children }: { children: ReactNode }) {
   const [user, setUser] = useState<User | null>(null);
   const [isLoading, setIsLoading] = useState(true);
   const router = useRouter();
-  const utils = api.useUtils();
+  // const utils = api.useUtils();
 
   const {
     data,
     isLoading: queryLoading,
-    error,
+    // error,
   } = api.auth.getMe.useQuery(undefined, {
     enabled: !!parseCookies().auth, // Only run query if token exists
   });
@@ -105,7 +105,7 @@ export function AuthProvider({ children }: { children: ReactNode }) {
   const logout = () => {
     document.cookie = clearAuthCookie(); // Consider server-side clearing
     setUser(null);
-    router.push("/login");
+    router.push("/signin");
   };
 
   return (

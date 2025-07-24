@@ -19,6 +19,6 @@
     "titleBar.inactiveForeground": "#15202b99"
   },
   "peacock.color": "#7671ff",
-  "cSpell.words": ["everno"],
+  "cSpell.words": ["everno", "sublinks"],
   "typescript.tsdk": "node_modules\\typescript\\lib"
 }
