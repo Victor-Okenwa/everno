@@ -525,7 +525,7 @@ const ColorPicker: React.FC<ColorPickerProps> = ({
                 const newColor = parseColor(e.target.value);
                 setCurrentColor(newColor);
               } catch (e) {
-                // Invalid color, ignore
+                console.log(e);
               }
             }}
             className="w-20 text-xs"

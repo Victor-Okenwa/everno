@@ -1,12 +1,5 @@
 "use client";
-import {
-  Calendar,
-  Home,
-  Inbox,
-  Link2Icon,
-  PlugZap2,
-  PlusCircleIcon,
-} from "lucide-react";
+import { Home, Link2Icon, PlugZap2, PlusCircleIcon } from "lucide-react";
 import Link from "next/link";
 import { usePathname } from "next/navigation";
 
@@ -35,7 +28,7 @@ import z from "zod";
 import { useForm } from "react-hook-form";
 import { zodResolver } from "@hookform/resolvers/zod";
 import { Form } from "../ui/form";
-import CustomInputField from "../form/custom-input-field";
+import { CustomInputField } from "../form/custom-input-field";
 import { api } from "~/trpc/react";
 import { Suspense, useState } from "react";
 import { toast } from "sonner";

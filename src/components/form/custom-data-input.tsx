@@ -2,6 +2,7 @@
 /* eslint-disable @typescript-eslint/no-unsafe-member-access */
 /* eslint-disable @typescript-eslint/no-unsafe-call */
 /* eslint-disable @typescript-eslint/no-unsafe-assignment */
+
 "use client";
 
 import { useState, useEffect, useCallback, useRef, type JSX } from "react";
@@ -17,7 +18,6 @@ import {
 } from "~/components/ui/popover";
 import {
   type Control,
-  type FieldError,
   type FieldErrors,
   useFieldArray,
   useFormState,
@@ -33,16 +33,22 @@ import { validateField } from "~/lib/chartValidation";
 import { Alert, AlertDescription } from "../ui/alert";
 
 const CHART_COLORS = [
-  "#8884d8",
-  "#82ca9d",
-  "#ffc658",
-  "#ff7300",
-  "#00ff00",
-  "#0088fe",
-  "#00c49f",
-  "#ffbb28",
-  "#ff8042",
-  "#8dd1e1",
+  "#8884d8", // soft purple
+  "#82ca9d", // mint green
+  "#ffc658", // golden yellow
+  "#ff7300", // bright orange
+  "#00ff00", // lime green
+  "#0088fe", // bright blue
+  "#00c49f", // teal
+  "#ffbb28", // warm yellow
+  "#ff8042", // coral
+  "#8dd1e1", // light cyan
+  "#d81b60", // deep pink
+  "#a1887f", // warm gray-brown
+  "#4b5e40", // deep olive green
+  "#b39ddb", // light lavender
+  "#ff4081", // hot pink
+  "#0288d1", // medium blue
 ];
 
 interface CustomDataInputProps {
@@ -64,7 +70,7 @@ export function CustomDataInput({
     fields: dataFields,
     append: appendData,
     remove: removeData,
-    update: updateData,
+    // update: updateData,
     replace: replaceData,
   } = useFieldArray({
     control,
@@ -75,7 +81,7 @@ export function CustomDataInput({
     // fields: columnFields,
     append: appendColumn,
     remove: removeColumn,
-    update: updateColumn,
+    // update: updateColumn,
     replace: replaceColumns,
   } = useFieldArray({
     control,
@@ -101,8 +107,8 @@ export function CustomDataInput({
           minColumns: 2,
           maxColumns: 2,
           suggestedColumns: [
-            { name: "Category", color: "" },
-            { name: "Value", color: CHART_COLORS[0] ?? "#8884d8" },
+            { name: "Category", color: CHART_COLORS[0] ?? "#8884d8" },
+            { name: "Value", color: CHART_COLORS[1] ?? "#82ca9d" },
           ],
           description:
             "Add categories and their corresponding values. Each row represents a slice of the pie/donut.",
@@ -113,8 +119,8 @@ export function CustomDataInput({
           minColumns: 2,
           maxColumns: 10,
           suggestedColumns: [
-            { name: "Range", color: "" },
-            { name: "Frequency", color: CHART_COLORS[0] ?? "#8884d8" },
+            { name: "Range", color: CHART_COLORS[0] ?? "#8884d8" },
+            { name: "Frequency", color: CHART_COLORS[1] ?? "#82ca9d" },
           ],
           description:
             "Add ranges/bins and their frequencies. Each row represents a bin in the histogram.",
@@ -127,9 +133,9 @@ export function CustomDataInput({
           minColumns: 2,
           maxColumns: 10,
           suggestedColumns: [
-            { name: "Month", color: "" },
-            { name: "Sales", color: CHART_COLORS[0] ?? "#8884d8" },
-            { name: "Profit", color: CHART_COLORS[1] ?? "#82ca9d" },
+            { name: "Month", color: CHART_COLORS[0] ?? "#8884d8" },
+            { name: "Sales", color: CHART_COLORS[1] ?? "#82ca9d" },
+            { name: "Profit", color: CHART_COLORS[2] ?? "#ffc658" },
           ],
           description:
             "Add an X-axis category and one or more data series. Each row represents a data point.",
@@ -140,8 +146,8 @@ export function CustomDataInput({
           minColumns: 2,
           maxColumns: 10,
           suggestedColumns: [
-            { name: "Category", color: "" },
-            { name: "Value", color: CHART_COLORS[0] ?? "#8884d8" },
+            { name: "Category", color: CHART_COLORS[0] ?? "#8884d8" },
+            { name: "Value", color: CHART_COLORS[1] ?? "#82ca9d" },
           ],
           description: "Add your data columns and values.",
           useRowColors: false,
@@ -201,7 +207,6 @@ export function CustomDataInput({
           return column;
         },
       );
-
       if (needsUpdate) {
         replaceColumns(updatedColumns);
       }
@@ -225,7 +230,6 @@ export function CustomDataInput({
           return row;
         },
       );
-
       if (needsUpdate) {
         replaceData(updatedData);
       }
@@ -259,15 +263,13 @@ export function CustomDataInput({
 
   const addRow = () => {
     const newRow: Record<string, unknown> = { id: Date.now().toString() };
-    watchedColumns?.forEach((col: {name: string}) => {
+    watchedColumns?.forEach((col: { name: string }) => {
       newRow[col.name] = "";
     });
-
     if (requirements.useRowColors) {
       const colorIndex = dataFields.length % CHART_COLORS.length;
       newRow.color = CHART_COLORS[colorIndex] ?? "#8884d8";
     }
-
     appendData(newRow);
   };
 
@@ -277,23 +279,14 @@ export function CustomDataInput({
     }
   };
 
-  const updateColumnColor = (columnIndex: number, color: string) => {
-    const column = watchedColumns?.[columnIndex];
-    if (column) {
-      updateColumn(columnIndex, { ...column, color });
-    }
-  };
-
-  const updateRowColor = (rowIndex: number, color: string) => {
-    const currentRow = watchedData?.[rowIndex];
-    if (currentRow) {
-      updateData(rowIndex, { ...currentRow, color });
-    }
-  };
-
   // Custom validation function for fields
   const createFieldValidator = (fieldPath: string) => (value: unknown) => {
-    return validateField(value, fieldPath, watchedColumns as never[] ?? [], chartType);
+    return validateField(
+      value,
+      fieldPath,
+      (watchedColumns as never[]) ?? [],
+      chartType,
+    );
   };
 
   // Get form errors for this section
@@ -308,8 +301,13 @@ export function CustomDataInput({
 
   // Check if there are any validation errors
   const hasErrors = () => {
-    const chartDataErrors = (errors as {chartData: unknown})?.chartData;
+    const chartDataErrors = (errors as { chartData: unknown })?.chartData;
     return !!chartDataErrors;
+  };
+
+  // Validate data in real-time
+  const validateData = () => {
+    // This will be handled by React Hook Form's validation
   };
 
   return (
@@ -375,63 +373,80 @@ export function CustomDataInput({
           )}
 
           <div className="flex flex-wrap gap-2">
-            {watchedColumns?.map((column: {name: string, color: string}, index: number) => (
-              <div
-                key={`column-${column.name}-${index}`}
-                className={`bg-secondary flex items-center gap-2 rounded-md p-2 ${
-                  getFieldError(`chartData.columns.${index}.name`)
-                    ? "border-destructive border"
-                    : ""
-                }`}
-              >
-                <span className="text-sm font-medium">{column.name}</span>
+            {watchedColumns?.map(
+              (column: { name: string; color: string }, index: number) => (
+                <div
+                  key={`column-${column.name}-${index}`}
+                  className={`bg-secondary flex items-center gap-2 rounded-md p-2 ${
+                    getFieldError(`chartData.columns.${index}.name`)
+                      ? "border-destructive border"
+                      : ""
+                  }`}
+                >
+                  <span className="text-sm font-medium">{column.name}</span>
 
-                {!requirements.useRowColors &&
-                  (["pie", "donut"].includes(chartType) ?? index > 0) && (
-                    <Popover>
-                      <PopoverTrigger asChild>
-                        <Button
-                          variant="ghost"
-                          size="sm"
-                          className="h-6 w-6 p-0"
-                          type="button"
-                        >
-                          <div
-                            className="h-4 w-4 rounded border"
-                            style={{ backgroundColor: column.color }}
-                          />
-                        </Button>
-                      </PopoverTrigger>
-                      <PopoverContent className="w-64">
-                        <div className="grid grid-cols-5 gap-2">
-                          {CHART_COLORS.map((color, colorIndex) => (
-                            <button
-                              key={`column-color-${color}-${colorIndex}`}
-                              type="button"
-                              className="h-8 w-8 rounded border-2 border-transparent hover:border-gray-300"
-                              style={{ backgroundColor: color }}
-                              onClick={() => updateColumnColor(index, color)}
-                            />
-                          ))}
-                        </div>
-                      </PopoverContent>
-                    </Popover>
-                  )}
+                  {/* Fix the logical condition here - use || instead of ?? */}
+                  {!requirements.useRowColors &&
+                    (["pie", "donut"].includes(chartType) || index > 0) && (
+                      <FormField
+                        control={control}
+                        name={`${name}.columns.${index}.color`}
+                        render={({ field }) => (
+                          <FormItem>
+                            <Popover>
+                              <PopoverTrigger asChild>
+                                <FormControl>
+                                  <Button
+                                    variant="ghost"
+                                    size="sm"
+                                    className="h-6 w-6 p-0"
+                                    type="button"
+                                  >
+                                    <div
+                                      className="h-4 w-4 rounded border"
+                                      style={{ backgroundColor: field.value }}
+                                    />
+                                  </Button>
+                                </FormControl>
+                              </PopoverTrigger>
+                              <PopoverContent className="w-64">
+                                <div className="grid grid-cols-5 gap-2">
+                                  {CHART_COLORS.map((color, colorIndex) => (
+                                    <button
+                                      key={`column-color-${color}-${colorIndex}`}
+                                      type="button"
+                                      className="h-8 w-8 rounded border-2 border-transparent hover:border-gray-300"
+                                      style={{ backgroundColor: color }}
+                                      onClick={() => {
+                                        field.onChange(color);
+                                        validateData();
+                                      }}
+                                    />
+                                  ))}
+                                </div>
+                              </PopoverContent>
+                            </Popover>
+                            <FormMessage />
+                          </FormItem>
+                        )}
+                      />
+                    )}
 
-                {watchedColumns &&
-                  watchedColumns.length > requirements.minColumns && (
-                    <Button
-                      variant="ghost"
-                      size="sm"
-                      onClick={() => removeColumnHandler(index)}
-                      className="text-destructive hover:text-destructive h-6 w-6 p-0"
-                      type="button"
-                    >
-                      <Trash2 className="h-3 w-3" />
-                    </Button>
-                  )}
-              </div>
-            ))}
+                  {watchedColumns &&
+                    watchedColumns.length > requirements.minColumns && (
+                      <Button
+                        variant="ghost"
+                        size="sm"
+                        onClick={() => removeColumnHandler(index)}
+                        className="text-destructive hover:text-destructive h-6 w-6 p-0"
+                        type="button"
+                      >
+                        <Trash2 className="h-3 w-3" />
+                      </Button>
+                    )}
+                </div>
+              ),
+            )}
           </div>
         </CardContent>
       </Card>
@@ -460,14 +475,16 @@ export function CustomDataInput({
                   gridTemplateColumns: `repeat(${watchedColumns.length}, 1fr) ${requirements.useRowColors ? "auto" : ""} auto`,
                 }}
               >
-                {watchedColumns.map((column: {name: string, color: string}, index: number) => (
-                  <Label
-                    key={`header-${column.name}-${index}`}
-                    className="text-sm font-medium"
-                  >
-                    {column.name}
-                  </Label>
-                ))}
+                {watchedColumns.map(
+                  (column: { name: string; color: string }, index: number) => (
+                    <Label
+                      key={`header-${column.name}-${index}`}
+                      className="text-sm font-medium"
+                    >
+                      {column.name}
+                    </Label>
+                  ),
+                )}
                 {requirements.useRowColors && (
                   <Label className="text-sm font-medium">Color</Label>
                 )}
@@ -483,81 +500,99 @@ export function CustomDataInput({
                     gridTemplateColumns: `repeat(${watchedColumns.length}, 1fr) ${requirements.useRowColors ? "auto" : ""} auto`,
                   }}
                 >
-                  {watchedColumns.map((column: {name: string, color: string}, colIndex: number) => (
+                  {watchedColumns.map(
+                    (
+                      column: { name: string; color: string },
+                      colIndex: number,
+                    ) => (
+                      <FormField
+                        key={`${field.id}-${column.name}-${colIndex}`}
+                        control={control}
+                        name={`${name}.data.${rowIndex}.${column.name}`}
+                        rules={{
+                          validate: createFieldValidator(
+                            `data.${rowIndex}.${column.name}`,
+                          ),
+                        }}
+                        render={({ field: inputField, fieldState }) => (
+                          <FormItem>
+                            <FormControl>
+                              <Input
+                                placeholder={`Enter ${column.name.toLowerCase()}`}
+                                className={
+                                  fieldState.error ? "border-destructive" : ""
+                                }
+                                {...inputField}
+                                onChange={(e) => {
+                                  const value = e.target.value;
+                                  // Convert to number if it's a value column and valid number
+                                  if (
+                                    colIndex > 0 ||
+                                    (requirements.useRowColors &&
+                                      colIndex === 1)
+                                  ) {
+                                    const numValue = Number(value);
+                                    if (!isNaN(numValue) && value !== "") {
+                                      inputField.onChange(numValue);
+                                      return;
+                                    }
+                                  }
+                                  inputField.onChange(value);
+                                }}
+                              />
+                            </FormControl>
+                            <FormMessage />
+                          </FormItem>
+                        )}
+                      />
+                    ),
+                  )}
+
+                  {requirements.useRowColors && (
                     <FormField
-                      key={`${field.id}-${column.name}-${colIndex}`}
                       control={control}
-                      name={`${name}.data.${rowIndex}.${column.name}`}
-                      rules={{
-                        validate: createFieldValidator(
-                          `data.${rowIndex}.${column.name}`,
-                        ),
-                      }}
-                      render={({ field: inputField, fieldState }) => (
+                      name={`${name}.data.${rowIndex}.color`}
+                      render={({ field }) => (
                         <FormItem>
                           <FormControl>
-                            <Input
-                              placeholder={`Enter ${column.name.toLowerCase()}`}
-                              className={
-                                fieldState.error ? "border-destructive" : ""
-                              }
-                              {...inputField}
-                              onChange={(e) => {
-                                const value = e.target.value;
-                                // Convert to number if it's a value column and valid number
-                                if (
-                                  colIndex > 0 ||
-                                  (requirements.useRowColors && colIndex === 1)
-                                ) {
-                                  const numValue = Number(value);
-                                  if (!isNaN(numValue) && value !== "") {
-                                    inputField.onChange(numValue);
-                                    return;
-                                  }
-                                }
-                                inputField.onChange(value);
-                              }}
-                            />
+                            <Popover>
+                              <PopoverTrigger asChild>
+                                <Button
+                                  variant="ghost"
+                                  size="sm"
+                                  className="h-8 w-8 p-0"
+                                  type="button"
+                                >
+                                  <div
+                                    className="h-6 w-6 rounded border"
+                                    style={{
+                                      backgroundColor: field.value,
+                                    }}
+                                  />
+                                </Button>
+                              </PopoverTrigger>
+                              <PopoverContent className="w-64">
+                                <div className="grid grid-cols-5 gap-2">
+                                  {CHART_COLORS.map((color, colorIndex) => (
+                                    <button
+                                      key={`row-color-${color}-${colorIndex}`}
+                                      type="button"
+                                      className="h-8 w-8 rounded border-2 border-transparent hover:border-gray-300"
+                                      style={{ backgroundColor: color }}
+                                      onClick={() => {
+                                        field.onChange(color);
+                                        validateData();
+                                      }}
+                                    />
+                                  ))}
+                                </div>
+                              </PopoverContent>
+                            </Popover>
                           </FormControl>
                           <FormMessage />
                         </FormItem>
                       )}
                     />
-                  ))}
-
-                  {requirements.useRowColors && (
-                    <Popover>
-                      <PopoverTrigger asChild>
-                        <Button
-                          variant="ghost"
-                          size="sm"
-                          className="h-8 w-8 p-0"
-                          type="button"
-                        >
-                          <div
-                            className="h-6 w-6 rounded border"
-                            style={{
-                              backgroundColor:
-                                watchedData?.[rowIndex]?.color ??
-                                CHART_COLORS[0],
-                            }}
-                          />
-                        </Button>
-                      </PopoverTrigger>
-                      <PopoverContent className="w-64">
-                        <div className="grid grid-cols-5 gap-2">
-                          {CHART_COLORS.map((color, colorIndex) => (
-                            <button
-                              key={`row-color-${color}-${colorIndex}`}
-                              type="button"
-                              className="h-8 w-8 rounded border-2 border-transparent hover:border-gray-300"
-                              style={{ backgroundColor: color }}
-                              onClick={() => updateRowColor(rowIndex, color)}
-                            />
-                          ))}
-                        </div>
-                      </PopoverContent>
-                    </Popover>
                   )}
 
                   <Button

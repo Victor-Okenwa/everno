@@ -3,7 +3,7 @@
 import { useForm } from "react-hook-form";
 import z from "zod";
 import { zodResolver } from "@hookform/resolvers/zod";
-import CustomInputField from "~/components/form/custom-input-field";
+import {CustomInputField} from "~/components/form/custom-input-field";
 import { Form } from "~/components/ui/form";
 import { Button } from "~/components/ui/button";
 import { useState } from "react";
@@ -13,7 +13,7 @@ import Link from "next/link";
 import { toast } from "sonner";
 import { api } from "~/trpc/react";
 import { setAuthCookie } from "~/lib/auth";
-import { setCookie } from "cookies-next";
+
 const signinSchema = z.object({
   email: z.string().email({ message: "Invalid email format" }),
   password: z

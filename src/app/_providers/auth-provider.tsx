@@ -35,7 +35,6 @@ export function AuthProvider({ children }: { children: ReactNode }) {
 
   const {
     data,
-    isLoading: queryLoading,
     // error,
   } = api.auth.getMe.useQuery(undefined, {
     enabled: !!parseCookies().auth, // Only run query if token exists

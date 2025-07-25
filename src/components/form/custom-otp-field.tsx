@@ -34,7 +34,7 @@ interface CustomOtpFieldProps<T extends FieldValues> {
   handleSubmit?: (data: T) => void;
 }
 
-export default function CustomOtpField<T extends FieldValues>({
+export function CustomOtpField<T extends FieldValues>({
   control,
   name,
   label = "",

@@ -4,7 +4,7 @@ import { InfoIcon } from "lucide-react";
 import React, { Suspense, useEffect, useState } from "react";
 import { motion } from "motion/react";
 import { CustomLoader } from "~/components/custom-loader";
-import CustomOtpField from "~/components/form/custom-otp-field";
+import {CustomOtpField} from "~/components/form/custom-otp-field";
 import z from "zod";
 import { useForm } from "react-hook-form";
 import { zodResolver } from "@hookform/resolvers/zod";

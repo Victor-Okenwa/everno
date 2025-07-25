@@ -2,7 +2,7 @@
 import { useForm } from "react-hook-form";
 import z from "zod";
 import { zodResolver } from "@hookform/resolvers/zod";
-import CustomInputField from "~/components/form/custom-input-field";
+import {CustomInputField} from "~/components/form/custom-input-field";
 import { Form } from "~/components/ui/form";
 import { Button } from "~/components/ui/button";
 import { useState } from "react";

@@ -12,13 +12,6 @@ import {
   BreadcrumbPage,
   BreadcrumbSeparator,
 } from "~/components/ui/breadcrumb";
-import {
-  DropdownMenu,
-  DropdownMenuContent,
-  DropdownMenuItem,
-  DropdownMenuTrigger,
-} from "~/components/ui/dropdown-menu";
-import { SlashIcon } from "lucide-react";
 
 interface BreadcrumbItemProps {
   label: string;
@@ -29,7 +22,6 @@ interface BreadcrumbItemProps {
 
 export function CustomBreadcrumbs() {
   const pathname = usePathname();
-  const [open, setOpen] = React.useState(false);
 
   // Generate breadcrumb items from pathname
   const generateBreadcrumbs = React.useMemo(() => {

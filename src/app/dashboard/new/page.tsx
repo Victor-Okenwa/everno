@@ -33,9 +33,9 @@ import { zodResolver } from "@hookform/resolvers/zod";
 import { useForm } from "react-hook-form";
 import { Button } from "~/components/ui/button";
 import { cn } from "~/lib/utils";
-import CustomInputField from "~/components/form/custom-input-field";
+import { CustomInputField } from "~/components/form/custom-input-field";
 import { Textarea } from "~/components/ui/textarea";
-import CustomSelectField from "~/components/form/custom-select-field";
+import { CustomSelectField } from "~/components/form/custom-select-field";
 import { api } from "~/trpc/react";
 import {
   Popover,
@@ -100,7 +100,8 @@ const chartDataSchema = z
       .min(1, "At least one data row is required"),
   })
   .refine(
-    () => {
+    (data) => {
+      console.log(data);
       // We'll validate this dynamically in the handleProceed function
       // since we need access to chartType which isn't available here
       return true;
@@ -353,7 +354,7 @@ export default function UpdatedNewDataFixed() {
                   </p>
                 </div>
               </div>
-              <div className="gap-2 mt-10 grid items-center justify-between sm:grid-cols-2">
+              <div className="mt-10 grid items-center justify-between gap-2 sm:grid-cols-2">
                 <FormField
                   control={form.control}
                   name="chartInfo.description"
@@ -382,7 +383,7 @@ export default function UpdatedNewDataFixed() {
                   </p>
                 </div>
               </div>
-              <div className="gap-2 mt-10 grid items-center justify-between sm:grid-cols-2">
+              <div className="mt-10 grid items-center justify-between gap-2 sm:grid-cols-2">
                 <CustomSelectField
                   control={form.control}
                   name="chartInfo.category"
@@ -401,7 +402,7 @@ export default function UpdatedNewDataFixed() {
                   </p>
                 </div>
               </div>
-              <div className="gap-2 mt-10 grid items-center justify-between sm:grid-cols-2">
+              <div className="mt-10 grid items-center justify-between gap-2 sm:grid-cols-2">
                 <FormField
                   control={form.control}
                   name="chartInfo.group"
@@ -482,35 +483,40 @@ export default function UpdatedNewDataFixed() {
 
           {/* Step 3: Chart Data Input */}
           {step === 3 && (
-          <>
-             {/* Show validation errors */}
-          {validationErrors.length > 0 && (
-            <Alert variant="destructive" className="sticky top-[10%] size-fit">
-              <AlertCircle className="h-4 w-4" />
-              <AlertDescription>
-                <div className="space-y-1">
-                  <p className="font-medium">
-                    Please fix the following errors:
-                  </p>
-                  <ul className="list-inside list-disc space-y-1">
-                    {validationErrors.map((error, index) => (
-                      <li key={index} className="text-sm">
-                        {error}
-                      </li>
-                    ))}
-                  </ul>
-                </div>
-              </AlertDescription>
-            </Alert>
-          )}
-          <ChartDataStep
-            chartType={form.watch("chartType.type")}
-            chartTitle={form.watch("chartInfo.title")}
-            chartDescription={form.watch("chartInfo.description")}
-            control={form.control}
-            name="chartData"
-          />
-          </>
+            <>
+              {/* Show validation errors */}
+              {validationErrors.length > 0 && (
+                <Alert
+                  variant="destructive"
+                  className="sticky top-[10%] size-fit"
+                >
+                  <AlertCircle className="h-4 w-4" />
+                  <AlertDescription>
+                    <div className="space-y-1">
+                      <p className="font-medium">
+                        Please fix the following errors:
+                      </p>
+                      <ul className="list-inside list-disc space-y-1">
+                        {validationErrors.map((error, index) => (
+                          <li key={index} className="text-sm">
+                            {error}
+                          </li>
+                        ))}
+                      </ul>
+                    </div>
+                  </AlertDescription>
+                </Alert>
+              )}
+              <ChartDataStep
+                chartType={form.watch("chartType.type")}
+                chartTitle={form.watch("chartInfo.title")}
+                chartDescription={form.watch("chartInfo.description")}
+                chartGroup={form.watch("chartInfo.group")}
+                chartCategory={form.watch("chartInfo.category")}
+                control={form.control}
+                name="chartData"
+              />
+            </>
           )}
 
           {/* Navigation Footer */}

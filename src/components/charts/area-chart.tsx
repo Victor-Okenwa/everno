@@ -15,7 +15,7 @@ interface CustomAreaChartProps {
   config: ChartConfig;
   xAxisKey: string;
   title?: string;
-  link?: string;
+  group?: string;
   category?: string;
   description?: string;
   showLegend?: boolean;
@@ -28,6 +28,8 @@ export function CustomAreaChart({
   config,
   xAxisKey,
   title,
+  group,
+  category,
   description,
   showLegend = true,
   showGrid = true,
@@ -73,7 +75,10 @@ export function CustomAreaChart({
         </AreaChart>
       </ChartContainer>
 
-      {/* <div className="flex justify-end gap-1 *:text-xs *:border *:border-dashed"></div> */}
+      <div className="flex justify-end gap-1 *:border *:border-dashed *:px-2 *:py-1 *:text-xs *:rounded-sm *:capitalize">
+        {group && <span>{group}</span>}
+        {category && <span className="bg-primary text-background">{category}</span>}
+      </div>
     </div>
   );
 }

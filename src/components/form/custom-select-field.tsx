@@ -5,11 +5,7 @@ import type { Control, FieldValues, Path } from "react-hook-form";
 import { useState } from "react";
 import { Check, ChevronsUpDown, InfoIcon, X } from "lucide-react";
 
-import {
-  cn,
-  splitCamelCaseToWords,
-  truncateText,
-} from "~/lib/utils";
+import { cn, splitCamelCaseToWords, truncateText } from "~/lib/utils";
 
 import { Badge } from "../ui/badge";
 import { Button } from "../ui/button";
@@ -71,7 +67,7 @@ interface CustomSelectFieldProps<T extends FieldValues> {
   contentClassName?: ClassValue;
 }
 
-export default function CustomSelectField<T extends FieldValues>({
+export function CustomSelectField<T extends FieldValues>({
   control,
   name,
   label = "",
