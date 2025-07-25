@@ -1,5 +1,5 @@
 "use client";
-import { Tabs, TabsContent, TabsList, TabsTrigger } from "~/components/ui/tabs";
+
 import { useState } from "react";
 import {
   AreaChart,
@@ -10,6 +10,7 @@ import {
   ChevronsUpDown,
   Donut,
   PieChart,
+  AlertCircle,
 } from "lucide-react";
 import z from "zod";
 import {
@@ -28,7 +29,6 @@ import {
   CommandItem,
   CommandList,
 } from "~/components/ui/command";
-
 import { zodResolver } from "@hookform/resolvers/zod";
 import { useForm } from "react-hook-form";
 import { Button } from "~/components/ui/button";
@@ -42,6 +42,9 @@ import {
   PopoverContent,
   PopoverTrigger,
 } from "~/components/ui/popover";
+import { ChartDataStep } from "~/components/chart-data-step";
+import { validateChartData } from "~/lib/chartValidation";
+import { Alert, AlertDescription } from "~/components/ui/alert";
 
 const category = [
   { label: "Entertainment", value: "entertainment" },
@@ -81,17 +84,44 @@ const chartInfo = z.object({
     .min(1, { message: "Please select one group" }),
 });
 
+// Enhanced schema for step 3 - chart data with dynamic validation
+const chartDataSchema = z
+  .object({
+    columns: z
+      .array(
+        z.object({
+          name: z.string().min(1, "Column name is required"),
+          color: z.string(), // Color is not required as we provide defaults
+        }),
+      )
+      .min(2, "At least 2 columns are required"),
+    data: z
+      .array(z.record(z.string(), z.union([z.string(), z.number()])))
+      .min(1, "At least one data row is required"),
+  })
+  .refine(
+    () => {
+      // We'll validate this dynamically in the handleProceed function
+      // since we need access to chartType which isn't available here
+      return true;
+    },
+    {
+      message: "Chart data validation failed",
+    },
+  );
+
 const newChartFormSchema = z.object({
   chartType: chartType,
   chartInfo: chartInfo,
+  chartData: chartDataSchema,
 });
 
 type NewChartForm = z.infer<typeof newChartFormSchema>;
 
-export default function NewData() {
+export default function UpdatedNewDataFixed() {
   const [step, setStep] = useState(1);
   const [chartType, setChartType] = useState("");
-
+  const [validationErrors, setValidationErrors] = useState<string[]>([]);
   const getAllLinks = api.userCall.getAllLinks.useQuery();
 
   const form = useForm<NewChartForm>({
@@ -100,25 +130,118 @@ export default function NewData() {
       chartType: {
         type: "",
       },
+      chartData: {
+        columns: [],
+        data: [],
+      },
     },
   });
 
   const handleProceed = async () => {
-    // try {
-    const isValid = await form.trigger(
-      step === 1 ? ["chartType"] : step === 2 ? ["chartInfo"] : ["chartInfo"],
-      {
-        shouldFocus: true,
-      },
-    );
+    setValidationErrors([]); // Clear previous errors
 
-    if (isValid && step < 3) {
+    let fieldsToValidate: (keyof NewChartForm)[] = [];
+
+    if (step === 1) {
+      fieldsToValidate = ["chartType"];
+    } else if (step === 2) {
+      fieldsToValidate = ["chartInfo"];
+    } else if (step === 3) {
+      // Custom validation for step 3 using our validation utility
+      const chartData = form.getValues("chartData");
+      const currentChartType = form.getValues("chartType.type");
+
+      if (chartData && currentChartType) {
+        const validation = validateChartData(chartData, currentChartType);
+
+        if (!validation.isValid) {
+          // Set specific field errors
+          if (validation.path) {
+            form.setError(`chartData.${validation.path}` as never, {
+              type: "manual",
+              message: validation.error ?? "Validation failed",
+            });
+          } else {
+            // General error
+            form.setError("chartData", {
+              type: "manual",
+              message: validation.error ?? "Chart data validation failed",
+            });
+          }
+
+          // Also set validation errors for display
+          setValidationErrors([
+            validation.error ?? "Chart data validation failed",
+          ]);
+          return;
+        }
+      }
+
+      fieldsToValidate = ["chartData"];
+    }
+
+    const isValid = await form.trigger(fieldsToValidate, {
+      shouldFocus: true,
+    });
+
+    if (!isValid) {
+      // Collect all validation errors for display
+      const errors: string[] = [];
+      const formErrors = form.formState.errors;
+
+      const collectErrors = (obj: never, path = "") => {
+        Object.keys(obj).forEach((key) => {
+          const fullPath = path ? `${path}.${key}` : key;
+          if ((obj[key] as { message?: string })?.message) {
+            errors.push(
+              `${fullPath}: ${(obj[key] as { message: string }).message}`,
+            );
+          } else if (typeof obj[key] === "object" && obj[key] !== null) {
+            collectErrors(obj[key], fullPath);
+          }
+        });
+      };
+
+      collectErrors(formErrors as never);
+      setValidationErrors(errors);
+      return;
+    }
+
+    if (step < 3) {
       setStep(step + 1);
     }
   };
 
   function onSubmit(values: NewChartForm) {
-    console.log(values);
+    // Final validation before submission
+    const validation = validateChartData(
+      values.chartData,
+      values.chartType.type,
+    );
+
+    if (!validation.isValid) {
+      console.error("Final validation failed:", validation.error);
+      setValidationErrors([validation.error ?? "Final validation failed"]);
+      return;
+    }
+
+    // Filter out empty rows and ensure colors are included
+    const processedData = {
+      ...values,
+      chartData: {
+        ...values.chartData,
+        data: values.chartData.data.filter((row) =>
+          values.chartData.columns.some((col) => {
+            const val = row[col.name];
+            return val !== "" && val !== null && val !== undefined;
+          }),
+        ),
+      },
+    };
+
+    console.log("Form submitted successfully:", processedData);
+    setValidationErrors([]);
+    // Here you can process the complete form data including validated chart data
   }
 
   return (
@@ -132,8 +255,10 @@ export default function NewData() {
                 ? "Input chart information"
                 : "Input Chart Data"}
           </h2>
+
+          {/* Step 1: Chart Type Selection */}
           {step === 1 && (
-            <div className={"flex flex-wrap gap-5 *:max-sm:flex-grow"}>
+            <div className={"flex flex-wrap gap-5 *:flex-grow"}>
               <div
                 className={cn(
                   "hover:bg-secondary dark:shadow-secondary flex cursor-pointer flex-col items-center rounded-lg p-10 shadow-lg",
@@ -142,12 +267,12 @@ export default function NewData() {
                 onClick={() => {
                   form.setValue("chartType.type", "area");
                   setChartType("area");
+                  setValidationErrors([]);
                 }}
               >
                 <AreaChart className="text-chart-1 size-32" />
                 <h4 className="text-xl font-medium">Area Chart</h4>
               </div>
-
               <div
                 className={cn(
                   "hover:bg-secondary dark:shadow-secondary flex cursor-pointer flex-col items-center rounded-lg p-10 shadow-lg",
@@ -156,12 +281,12 @@ export default function NewData() {
                 onClick={() => {
                   form.setValue("chartType.type", "bar");
                   setChartType("bar");
+                  setValidationErrors([]);
                 }}
               >
                 <BarChart className="text-chart-2 size-32" />
                 <h4 className="text-xl font-medium">Bar Chart</h4>
               </div>
-
               <div
                 className={cn(
                   "hover:bg-secondary dark:shadow-secondary flex cursor-pointer flex-col items-center rounded-lg p-10 shadow-lg",
@@ -170,12 +295,12 @@ export default function NewData() {
                 onClick={() => {
                   form.setValue("chartType.type", "donut");
                   setChartType("donut");
+                  setValidationErrors([]);
                 }}
               >
                 <Donut className="text-chart-3 size-32" />
                 <h4 className="text-xl font-medium">Donut Chart</h4>
               </div>
-
               <div
                 className={cn(
                   "hover:bg-secondary dark:shadow-secondary flex cursor-pointer flex-col items-center rounded-lg p-10 shadow-lg",
@@ -184,12 +309,12 @@ export default function NewData() {
                 onClick={() => {
                   form.setValue("chartType.type", "histogram");
                   setChartType("histogram");
+                  setValidationErrors([]);
                 }}
               >
                 <BarChart3 className="text-chart-4 size-32" />
                 <h4 className="text-xl font-medium">Histogram</h4>
               </div>
-
               <div
                 className={cn(
                   "hover:bg-secondary dark:shadow-secondary flex cursor-pointer flex-col items-center rounded-lg p-10 shadow-lg",
@@ -198,6 +323,7 @@ export default function NewData() {
                 onClick={() => {
                   form.setValue("chartType.type", "pie");
                   setChartType("pie");
+                  setValidationErrors([]);
                 }}
               >
                 <PieChart className="text-primary size-32" />
@@ -206,6 +332,7 @@ export default function NewData() {
             </div>
           )}
 
+          {/* Step 2: Chart Information */}
           {step === 2 && (
             <div className="">
               <div className="grid items-center justify-between sm:grid-cols-2">
@@ -215,7 +342,6 @@ export default function NewData() {
                   label="Title"
                   placeholder="eg. 2024 Sales"
                 />
-
                 <div className="ml-auto flex max-w-lg flex-col">
                   <h3 className="font-semibold max-sm:hidden">
                     Title of the chart
@@ -227,8 +353,7 @@ export default function NewData() {
                   </p>
                 </div>
               </div>
-
-              <div className="mt-10 grid items-center justify-between sm:grid-cols-2">
+              <div className="gap-2 mt-10 grid items-center justify-between sm:grid-cols-2">
                 <FormField
                   control={form.control}
                   name="chartInfo.description"
@@ -246,7 +371,6 @@ export default function NewData() {
                     </FormItem>
                   )}
                 />
-
                 <div className="ml-auto flex max-w-lg flex-col">
                   <h3 className="font-semibold max-sm:hidden">
                     Description of the chart
@@ -258,8 +382,7 @@ export default function NewData() {
                   </p>
                 </div>
               </div>
-
-              <div className="mt-10 grid items-center justify-between sm:grid-cols-2">
+              <div className="gap-2 mt-10 grid items-center justify-between sm:grid-cols-2">
                 <CustomSelectField
                   control={form.control}
                   name="chartInfo.category"
@@ -267,7 +390,6 @@ export default function NewData() {
                   options={category}
                   placeholder="Select a category"
                 />
-
                 <div className="ml-auto flex max-w-lg flex-col">
                   <h3 className="font-semibold max-sm:hidden">
                     Category of the chart
@@ -279,14 +401,13 @@ export default function NewData() {
                   </p>
                 </div>
               </div>
-
-              <div className="mt-10 grid items-center justify-between sm:grid-cols-2">
+              <div className="gap-2 mt-10 grid items-center justify-between sm:grid-cols-2">
                 <FormField
                   control={form.control}
                   name="chartInfo.group"
                   render={({ field }) => (
                     <FormItem className="flex flex-col">
-                      <FormLabel>Language</FormLabel>
+                      <FormLabel>Group</FormLabel>
                       <Popover>
                         <PopoverTrigger asChild>
                           <FormControl>
@@ -310,11 +431,11 @@ export default function NewData() {
                         <PopoverContent className="w-[200px] max-w-sm p-0">
                           <Command>
                             <CommandInput
-                              placeholder="Search framework..."
+                              placeholder="Search group..."
                               className="h-9"
                             />
                             <CommandList>
-                              <CommandEmpty>No framework found.</CommandEmpty>
+                              <CommandEmpty>No group found.</CommandEmpty>
                               <CommandGroup>
                                 {getAllLinks.data?.links.map(({ name }) => (
                                   <CommandItem
@@ -344,31 +465,55 @@ export default function NewData() {
                     </FormItem>
                   )}
                 />
-
                 <div className="ml-auto flex max-w-lg flex-col">
                   <h3 className="font-semibold max-sm:hidden">
-                    Category of the chart
+                    Chart grouping
                   </h3>
                   <p className="text-foreground/80 text-sm">
-                    This is the chart category, it is where the data came from
-                    or how it came to be. This is important to help you in
-                    grouping charts.
+                    This is the chart where the chart would be grouped into. You
+                    cannot proceed unless you have created a group. To create a
+                    group click on the add new link on the sidebar to get
+                    started.
                   </p>
                 </div>
               </div>
             </div>
           )}
+
+          {/* Step 3: Chart Data Input */}
           {step === 3 && (
-            <Tabs defaultValue="manual" className="px-2 py-4">
-              <TabsList className="no-scrollbar bg-secondary/70 *:border-secondary *:data-[state=active]:bg-background flex h-fit w-full overflow-x-auto *:flex-grow *:cursor-pointer *:border-2 *:px-3 *:py-2 *:text-xl *:font-medium *:opacity-80 *:data-[state=active]:opacity-100 sm:gap-3">
-                <TabsTrigger value="manual">Manual</TabsTrigger>
-                <TabsTrigger value="file">File</TabsTrigger>
-              </TabsList>
-              <TabsContent value="manual">Manual</TabsContent>
-              <TabsContent value="file">File</TabsContent>
-            </Tabs>
+          <>
+             {/* Show validation errors */}
+          {validationErrors.length > 0 && (
+            <Alert variant="destructive" className="sticky top-[10%] size-fit">
+              <AlertCircle className="h-4 w-4" />
+              <AlertDescription>
+                <div className="space-y-1">
+                  <p className="font-medium">
+                    Please fix the following errors:
+                  </p>
+                  <ul className="list-inside list-disc space-y-1">
+                    {validationErrors.map((error, index) => (
+                      <li key={index} className="text-sm">
+                        {error}
+                      </li>
+                    ))}
+                  </ul>
+                </div>
+              </AlertDescription>
+            </Alert>
+          )}
+          <ChartDataStep
+            chartType={form.watch("chartType.type")}
+            chartTitle={form.watch("chartInfo.title")}
+            chartDescription={form.watch("chartInfo.description")}
+            control={form.control}
+            name="chartData"
+          />
+          </>
           )}
 
+          {/* Navigation Footer */}
           <div className="bg-background sticky bottom-0 mt-8 grid w-full grid-cols-2 items-center justify-between rounded-sm p-2 drop-shadow">
             <div className="flex gap-1">
               {Array.from({ length: 3 }).map((_, index) => (
@@ -389,7 +534,10 @@ export default function NewData() {
                 variant="outline"
                 disabled={step === 1}
                 onClick={() => {
-                  if (step > 1) setStep(step - 1);
+                  if (step > 1) {
+                    setStep(step - 1);
+                    setValidationErrors([]);
+                  }
                 }}
                 aria-label="Previous"
               >
@@ -399,7 +547,7 @@ export default function NewData() {
                 type={step === 3 ? "submit" : "button"}
                 onClick={step < 3 ? handleProceed : undefined}
               >
-                Proceed
+                {step === 3 ? "Create Chart" : "Proceed"}
               </Button>
             </div>
           </div>
