@@ -45,6 +45,7 @@ import {
 import { ChartDataStep } from "~/components/chart-data-step";
 import { validateChartData } from "~/lib/chartValidation";
 import { Alert, AlertDescription } from "~/components/ui/alert";
+import { toast } from "sonner";
 
 const category = [
   { label: "Entertainment", value: "entertainment" },
@@ -124,6 +125,11 @@ export default function UpdatedNewDataFixed() {
   const [chartType, setChartType] = useState("");
   const [validationErrors, setValidationErrors] = useState<string[]>([]);
   const getAllLinks = api.userCall.getAllLinks.useQuery();
+  const createChartMutation = api.chart.create.useMutation({
+    onSuccess: function () {
+      toast.success("Chart uploaded");
+    },
+  });
 
   const form = useForm<NewChartForm>({
     resolver: zodResolver(newChartFormSchema),
@@ -214,35 +220,68 @@ export default function UpdatedNewDataFixed() {
   };
 
   function onSubmit(values: NewChartForm) {
-    // Final validation before submission
-    const validation = validateChartData(
-      values.chartData,
-      values.chartType.type,
-    );
+    try {
+      // Final validation before submission
+      const validation = validateChartData(
+        values.chartData,
+        values.chartType.type,
+      );
 
-    if (!validation.isValid) {
-      console.error("Final validation failed:", validation.error);
-      setValidationErrors([validation.error ?? "Final validation failed"]);
-      return;
+      if (!validation.isValid) {
+        console.error("Final validation failed:", validation.error);
+        setValidationErrors([validation.error ?? "Final validation failed"]);
+        return;
+      }
+
+      // Prepare data for API
+      const chartData = {
+        title: values.chartInfo.title,
+        description: values.chartInfo.description,
+        type: values.chartType.type as
+          | "bar"
+          | "area"
+          | "line"
+          | "pie"
+          | "donut"
+          | "histogram",
+        category: values.chartInfo.category,
+        group: values.chartInfo.group,
+        chartData: {
+          columns: values.chartData.columns,
+          data: values.chartData.data.filter((row) =>
+            values.chartData.columns.some((col) => {
+              const val = row[col.name];
+              return val !== "" && val !== null && val !== undefined;
+            }),
+          ),
+        },
+        isPublic: false, // You can add this as a form field if needed
+        tags: [], // You can add this as a form field if needed
+      };
+
+      // Filter out empty rows and ensure colors are included
+      // const processedData = {
+      //   ...values,
+      //   chartData: {
+      //     ...values.chartData,
+      //     data: values.chartData.data.filter((row) =>
+      //       values.chartData.columns.some((col) => {
+      //         const val = row[col.name];
+      //         return val !== "" && val !== null && val !== undefined;
+      //       }),
+      //     ),
+      //   },
+      // };
+
+      console.log("Form submitted successfully:", chartData);
+      createChartMutation.mutate(chartData);
+      setValidationErrors([]);
+      // Here you can process the complete form data including validated chart data
+    } catch (error: unknown) {
+      toast.error(
+        `Error submitting data. Reason: ${(error as { message: string }).message}`,
+      );
     }
-
-    // Filter out empty rows and ensure colors are included
-    const processedData = {
-      ...values,
-      chartData: {
-        ...values.chartData,
-        data: values.chartData.data.filter((row) =>
-          values.chartData.columns.some((col) => {
-            const val = row[col.name];
-            return val !== "" && val !== null && val !== undefined;
-          }),
-        ),
-      },
-    };
-
-    console.log("Form submitted successfully:", processedData);
-    setValidationErrors([]);
-    // Here you can process the complete form data including validated chart data
   }
 
   return (
@@ -552,8 +591,13 @@ export default function UpdatedNewDataFixed() {
               <Button
                 type={step === 3 ? "submit" : "button"}
                 onClick={step < 3 ? handleProceed : undefined}
+                disabled={createChartMutation.isPending}
               >
-                {step === 3 ? "Create Chart" : "Proceed"}
+                {step === 3
+                  ? createChartMutation.isPending
+                    ? "Creating..."
+                    : "Create Chart"
+                  : "Proceed"}
               </Button>
             </div>
           </div>

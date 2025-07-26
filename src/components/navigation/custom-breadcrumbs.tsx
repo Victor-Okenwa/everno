@@ -5,7 +5,6 @@ import { usePathname } from "next/navigation";
 import Link from "next/link";
 import {
   Breadcrumb,
-  BreadcrumbEllipsis,
   BreadcrumbItem,
   BreadcrumbLink,
   BreadcrumbList,
@@ -33,15 +32,6 @@ export function CustomBreadcrumbs() {
       currentPath += `/${segment}`;
       const isLast = index === segments.length - 1;
 
-      // Create sublinks for intermediate levels (2nd and 3rd levels)
-      // const sublinks =
-      //   index < 3 && !isLast
-      //     ? [
-      //         { label: `${segment} Sub 1`, href: `${currentPath}` },
-      //         { label: `${segment} Sub 2`, href: `${currentPath}` },
-      //       ]
-      //     : undefined;
-
       items.push({
         label: segment.charAt(0).toUpperCase() + segment.slice(1),
         href: isLast ? undefined : currentPath,
@@ -59,29 +49,11 @@ export function CustomBreadcrumbs() {
       <BreadcrumbList>
         {generateBreadcrumbs.map((item, index) => (
           <React.Fragment key={index}>
-            {index > 0 && (
-              <BreadcrumbSeparator />
-            )}
+            {index > 0 && <BreadcrumbSeparator />}
             <BreadcrumbItem>
               {item.isCurrent ? (
                 <BreadcrumbPage>{item.label}</BreadcrumbPage>
-              ) /* : item.sublinks ? (
-                <DropdownMenu open={open} onOpenChange={setOpen}>
-                  <DropdownMenuTrigger className="flex items-center gap-1">
-                    <BreadcrumbLink asChild>
-                      <Link href={item.href ?? "#"}>{item.label}</Link>
-                    </BreadcrumbLink>
-                    <BreadcrumbEllipsis className="h-4 w-4"  />
-                  </DropdownMenuTrigger>
-                  <DropdownMenuContent align="start">
-                    {item.sublinks.map((sublink, subIndex) => (
-                      <DropdownMenuItem key={subIndex}>
-                        <Link href={sublink.href}>{sublink.label}</Link>
-                      </DropdownMenuItem>
-                    ))}
-                  </DropdownMenuContent>
-                </DropdownMenu>
-              ) */: (
+              ) : (
                 <BreadcrumbLink asChild>
                   <Link href={item.href ?? "#"}>{item.label}</Link>
                 </BreadcrumbLink>
