@@ -46,6 +46,7 @@ import { ChartDataStep } from "~/components/chart-data-step";
 import { validateChartData } from "~/lib/chartValidation";
 import { Alert, AlertDescription } from "~/components/ui/alert";
 import { toast } from "sonner";
+import { useRouter } from "next/navigation";
 
 const category = [
   { label: "Entertainment", value: "entertainment" },
@@ -121,6 +122,7 @@ const newChartFormSchema = z.object({
 type NewChartForm = z.infer<typeof newChartFormSchema>;
 
 export default function UpdatedNewDataFixed() {
+  const router = useRouter();
   const [step, setStep] = useState(1);
   const [chartType, setChartType] = useState("");
   const [validationErrors, setValidationErrors] = useState<string[]>([]);
@@ -128,6 +130,7 @@ export default function UpdatedNewDataFixed() {
   const createChartMutation = api.chart.create.useMutation({
     onSuccess: function () {
       toast.success("Chart uploaded");
+      router.push("/dashboard");
     },
   });
 
@@ -375,7 +378,7 @@ export default function UpdatedNewDataFixed() {
           {/* Step 2: Chart Information */}
           {step === 2 && (
             <div className="">
-              <div className="grid items-center justify-between sm:grid-cols-2">
+              <div className="grid items-center justify-between gap-3 sm:grid-cols-2">
                 <CustomInputField
                   control={form.control}
                   name="chartInfo.title"
@@ -522,9 +525,9 @@ export default function UpdatedNewDataFixed() {
 
           {/* Step 3: Chart Data Input */}
           {step === 3 && (
-            <>
+            <div className="w-full max-w-full">
               {/* Show validation errors */}
-              {validationErrors.length > 0 && (
+              {/* {validationErrors.length > 0 && (
                 <Alert
                   variant="destructive"
                   className="sticky top-[10%] size-fit"
@@ -545,7 +548,7 @@ export default function UpdatedNewDataFixed() {
                     </div>
                   </AlertDescription>
                 </Alert>
-              )}
+              )} */}
               <ChartDataStep
                 chartType={form.watch("chartType.type")}
                 chartTitle={form.watch("chartInfo.title")}
@@ -555,7 +558,7 @@ export default function UpdatedNewDataFixed() {
                 control={form.control}
                 name="chartData"
               />
-            </>
+            </div>
           )}
 
           {/* Navigation Footer */}

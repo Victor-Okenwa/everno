@@ -31,7 +31,7 @@ export function CustomAreaChart({
 
   return (
     <div className="w-full">
-      <ChartContainer config={config} className="min-h-[300px] h-5 w-full">
+      <ChartContainer config={config} className="min-h-[300px] w-full">
         <AreaChart
           data={data}
           margin={{ top: 20, right: 30, left: 20, bottom: 5 }}

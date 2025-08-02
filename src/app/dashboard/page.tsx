@@ -5,20 +5,10 @@ import { api } from "~/trpc/react";
 import { useRef } from "react";
 import { ChartSkeleton } from "~/components/chart-skeleton";
 import { Button } from "~/components/ui/button";
-import { ChartPreview } from "~/components/chart-preview";
-import {
-  DropdownMenu,
-  DropdownMenuContent,
-  DropdownMenuItem,
-  DropdownMenuTrigger,
-} from "~/components/ui/dropdown-menu";
-import { Card, CardContent, CardHeader, CardTitle } from "~/components/ui/card";
-import { MoreHorizontal } from "lucide-react";
-import { Badge } from "~/components/ui/badge";
-import { formatDistanceToNow } from "date-fns";
+import { ChartCard } from "~/components/chart-card";
 import type { Chart } from "~/server/db/zod-schemas/chart";
 
-const ITEMS_PER_PAGE = 12;
+const ITEMS_PER_PAGE = 3;
 
 export default function Dashboard() {
   const router = useRouter();
@@ -94,113 +84,11 @@ export default function Dashboard() {
   }
 
   return (
-    <div className="space-y-6">
+    <div className="flex flex-wrap justify-between gap-6 space-y-6 px-2 *:flex-1 max-sm:flex-col">
       {allCharts.map((chart, index) => (
-        <Card
-          key={index}
-          className="group cursor-pointer transition-shadow duration-200 hover:shadow-lg"
-          // onClick={() => handleView(chart._id)}
-        >
-          <CardHeader className="pb-3">
-            <div className="flex items-start justify-between">
-              <div className="min-w-0 flex-1">
-                <CardTitle className="truncate text-base font-semibold">
-                  {chart.title}
-                </CardTitle>
-                <p className="text-muted-foreground mt-1 line-clamp-2 text-sm">
-                  {chart.description}
-                </p>
-              </div>
-              <DropdownMenu>
-                <DropdownMenuTrigger asChild>
-                  <Button
-                    variant="ghost"
-                    size="sm"
-                    className="opacity-0 transition-opacity group-hover:opacity-100"
-                    onClick={(e) => e.stopPropagation()}
-                  >
-                    <MoreHorizontal className="h-4 w-4" />
-                  </Button>
-                </DropdownMenuTrigger>
-                <DropdownMenuContent align="end">
-                  {/* <DropdownMenuItem onClick={() => handleView(chart._id)}>
-                      <Eye className="h-4 w-4 mr-2" />
-                      View
-                    </DropdownMenuItem>
-                    <DropdownMenuItem onClick={() => handleEdit(chart._id)}>
-                      <Edit className="h-4 w-4 mr-2" />
-                      Edit
-                    </DropdownMenuItem>
-                    <DropdownMenuItem 
-                      onClick={() => handleDuplicate(chart._id, chart.title)}
-                      disabled={duplicateChartMutation.isPending}
-                    >
-                      <Copy className="h-4 w-4 mr-2" />
-                      Duplicate
-                    </DropdownMenuItem>
-                    <DropdownMenuItem 
-                      onClick={() => handleDelete(chart._id, chart.title)}
-                      className="text-destructive"
-                      disabled={deleteChartMutation.isPending}
-                    >
-                      <Trash2 className="h-4 w-4 mr-2" />
-                      Delete
-                    </DropdownMenuItem> */}
-                </DropdownMenuContent>
-              </DropdownMenu>
-            </div>
-          </CardHeader>
-
-          <CardContent className="h-fit pt-0">
-            {/* Chart Preview */}
-            <div className="bg-muted/20 overflow mb-4 rounded-lg">
-              <ChartPreview
-                chart={chart as unknown as Chart}
-                height={10}
-                showLegend={true}
-                showGrid={false}
-              />
-            </div>
-
-            {/* Chart Metadata */}
-            <div className="space-y-3">
-              <div className="flex flex-wrap items-center gap-2">
-                <Badge variant="secondary" className="text-xs">
-                  {chart.type}
-                </Badge>
-                <Badge variant="outline" className="text-xs">
-                  {chart.category}
-                </Badge>
-                {chart.isPublic && (
-                  <Badge variant="default" className="text-xs">
-                    Public
-                  </Badge>
-                )}
-              </div>
-
-              <div className="text-muted-foreground flex items-center justify-between text-xs">
-                <span>{chart.group}</span>
-                <span>
-                  {formatDistanceToNow(
-                    new Date(
-                      (chart as unknown as { updatedAt: string }).updatedAt,
-                    ),
-                    {
-                      addSuffix: true,
-                    },
-                  )}
-                </span>
-              </div>
-
-              {chart.metadata && (
-                <div className="text-muted-foreground text-xs">
-                  {chart.metadata.totalRows} rows •{" "}
-                  {chart.metadata.totalColumns} columns
-                </div>
-              )}
-            </div>
-          </CardContent>
-        </Card>
+        <div key={index}>
+          <ChartCard chart={chart as unknown as Chart} />
+        </div>
       ))}
     </div>
   );

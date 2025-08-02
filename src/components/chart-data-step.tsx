@@ -195,7 +195,7 @@ export function ChartDataStep({
         </TabsList>
 
         <TabsContent value="manual" className="space-y-6">
-          <div className="grid gap-6 lg:grid-cols-2">
+          <div className="grid gap-6 lg:grid-cols-2 w-full">
             {/* Data Input Section */}
             <div className="space-y-4">
               <h3 className="text-lg font-semibold">Data Input</h3>
@@ -203,7 +203,7 @@ export function ChartDataStep({
             </div>
 
             {/* Chart Preview Section */}
-            <div className="space-y-4">
+            <div className="space-y-4 max-w-full">
               <h3 className="text-lg font-semibold">Live Preview</h3>
               <Card>
                 <CardContent className="p-6">{renderChart(false)}</CardContent>
